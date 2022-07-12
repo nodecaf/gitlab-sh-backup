@@ -8,6 +8,6 @@ Tool for backing up all GitLab Git repos with all branches from all groups and s
 ## Variables
 ```
 export GITLAB_TOKEN="<personal token>"
-export GITLAB_SERVER=""
-export GITLAB_GROUP=""
+export GITLAB_SERVER="https://gitlab.mydomain.com"
+export GITLAB_GROUP="<my toplevel group>"
 ```
