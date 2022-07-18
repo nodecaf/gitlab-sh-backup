@@ -36,4 +36,19 @@ if [[ "$LAST_PAGE" -gt "1" ]]; then
   done
 fi
 echo $ALL_PROJECTS | jq | grep -i ${GITLAB_GROUP} | sed -e 's/.*://g' -e 's/"//g' | xargs -n 1 -I {}  git clone https://${GITLAB_USER}:${GITLAB_TOKEN}@${GITLAB_SERVER}/{}
+
+#Process all repos we pulled down
+for GIT_REPO in $( echo $ALL_PROJECTS | jq | grep -i ${GITLAB_GROUP} | sed -e 's/.*://g' -e 's/"//g' | xargs -n 1 basename -s .git)
+  do
+    #enter each repo
+    cd $GIT_REPO
+    #Pull down all branches
+    for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(:?HEAD|master)$'); do
+    echo "Now pulling branch ${branch} for ${GIT_REPO}"
+    git branch --track "${branch##*/}" "$branch"
+    done
+    #exit 
+    cd ..
+done
+ 
 #curl  -H "Authorization: Bearer $GITLAB_TOKEN" ${GITLAB_SERVER}/api/v4/groups/${GITLAB_GROUP}/projects | jq .[].ssh_url_to_repo
