@@ -43,7 +43,7 @@ for GIT_REPO in $( echo $ALL_PROJECTS | jq | grep -i ${GITLAB_GROUP} | sed -e 's
     #enter each repo
     cd $GIT_REPO
     #Pull down all branches
-    for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(:?HEAD|master)$'); do
+    for branch in $(git branch --all | grep '^\s*remotes' | egrep --invert-match '(HEAD)'); do
     echo "Now pulling branch ${branch} for ${GIT_REPO}"
     git branch --track "${branch##*/}" "$branch"
     done
