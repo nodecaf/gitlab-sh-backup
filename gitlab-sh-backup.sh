@@ -2,7 +2,7 @@
 
 
 
-#curl  -sH "Authorization: Bearer $GITLAB_TOKEN" ${GITLAB_SERVER}/api/v4/groups/${GITLAB_GROUP}/subgroups | jq .[].web_url
+#curl  -sH "Authorization: Bearer $GITLAB_TOKEN" https://${GITLAB_SERVER}/api/v4/groups/${GITLAB_GROUP}/subgroups | jq .[].web_url
 
 
 #list all projects in group
@@ -13,7 +13,7 @@ HEADER="Authorization: Bearer ${GITLAB_TOKEN}"
 PROJECT_ATTRIBUTES="per_page=100"
 RESPONSE=$( \
 	curl --include -sH "Authorization: Bearer $GITLAB_TOKEN" \
-	"${GITLAB_SERVER}/api/v4/projects?${PROJECT_ATTRIBUTES}" \
+	"https://${GITLAB_SERVER}/api/v4/projects?${PROJECT_ATTRIBUTES}" \
         ) || { script_banner "ERROR: Could not retrieve group project."; exit $?; }
 #echo $RESPONSE
 LAST_PAGE=$(echo "$RESPONSE" | grep -i "x-total-pages" | sed 's|X-Total-Pages: ||g' | tr -d '\r')
@@ -29,11 +29,11 @@ if [[ "$LAST_PAGE" -gt "1" ]]; then
     # Getting ID, Path and Last Activity
     RESPONSE=$( \
                 curl -sH  "${HEADER}" \
-                "${GITLAB_SERVER}/api/v4/projects?${PROJECT_ATTRIBUTES}&page=${PAGE}" | jq '.[].ssh_url_to_repo' ) || { echo "ERROR: Could not retrieve existing project."; exit $?; }
+                "https://${GITLAB_SERVER}/api/v4/projects?${PROJECT_ATTRIBUTES}&page=${PAGE}" | jq '.[].ssh_url_to_repo' ) || { echo "ERROR: Could not retrieve existing project."; exit $?; }
                 #"${GITLAB_SERVER}/api/v4/groups/${GITLAB_GROUP}/projects?${PROJECT_ATTRIBUTES}&page=${PAGE}" | jq '.[].ssh_url_to_repo' ) || { echo "ERROR: Could not retrieve existing project."; exit $?; }
 #echo $RESPONSE
     ALL_PROJECTS+=$'\n'"$RESPONSE"
   done
 fi
-echo $ALL_PROJECTS | jq | grep -i ${GITLAB_GROUP}
+echo $ALL_PROJECTS | jq | grep -i ${GITLAB_GROUP} | sed -e 's/.*://g' -e 's/"//g' | xargs -n 1 -I {}  git clone https://${GITLAB_USER}:${GITLAB_TOKEN}@${GITLAB_SERVER}/{}
 #curl  -H "Authorization: Bearer $GITLAB_TOKEN" ${GITLAB_SERVER}/api/v4/groups/${GITLAB_GROUP}/projects | jq .[].ssh_url_to_repo
